@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections;
 
-namespace LeetCodeProblems
+namespace LeetCodeProblems.Problems
 {
     class Program
     {
-        static void Main(string[] args)
+        void Main(string[] args)
         {
             var order = "hlabcdefgijkmnopqrstuvwxyz";
             var words = new string[]
