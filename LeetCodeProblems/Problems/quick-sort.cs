@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace LeetCodeProblems.Problems
 {
@@ -15,6 +16,9 @@ namespace LeetCodeProblems.Problems
             var hashTable = new Hashtable();
             hashTable.Add('a', 0);
 
+            var list = new List<int>();
+            var test2 = list[0];
+            
             var test = (int)hashTable['a'];
 
             var sortedArray = QuickSort(array);

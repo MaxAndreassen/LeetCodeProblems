@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace LeetCodeProblems
 {
@@ -7,74 +7,137 @@ namespace LeetCodeProblems
     {
         static void Main(string[] args)
         {
-            var order = "hlabcdefgijkmnopqrstuvwxyz";
-            var words = new string[]
+            var result = KClosest(new int[][]
             {
-                "hello", "leetcode"
-            };
-
-            var result = IsAlienSorted(words, order);
-
-            Console.WriteLine(result);
-
+                new[] {3, 3},
+                new[] {5, -1},
+                new[] {-2, 4}
+            }, 2);
             Console.Read();
         }
 
-        static bool IsAlienSorted(string[] words, string order)
+        public static int[][] KClosest(int[][] points, int k)
         {
-            var hashTable = new Hashtable();
+            var priorityQueue = new Heap<int[]>();
 
-            for (var i = 0; i < order.Length; i++)
+            for (var i = 0; i < points.Length; i++)
             {
-                hashTable.Add(order[i], i);
+                var distance = DistanceFromOrigin(points[i][0], points[i][1]);
+
+                priorityQueue.Insert(new HeapObject<int[]>(distance, points[i]));
             }
 
-            return CompareWords(words, hashTable, 0);
+            var newPoints = new int[k][];
+
+            for (var i = 0; i < k; i++)
+            {
+                newPoints[i] = priorityQueue.RemoveTop();
+            }
+
+            return newPoints;
         }
 
-        static bool CompareWords(string[] words, Hashtable order, int position)
+        public static int DistanceFromOrigin(int x, int y)
         {
-            if (position >= words.Length - 1)
-                return true;
+            return (int) Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+        }
 
-            var result = CompareWords(words, order, position + 1);
+        class HeapObject<T> where T : class
+        {
+            public readonly int Comparer;
+            public readonly T Data;
 
-            if (result == true)
+            public HeapObject(int comparer, T data)
             {
-                var word1 = words[position];
-                var word2 = words[position + 1];
+                Comparer = comparer;
+                Data = data;
+            }
+        }
 
-                if (word1 == word2)
-                    return true;
+        class Heap<T> where T : class
+        {
+            private List<HeapObject<T>> Values { get; set; } = new List<HeapObject<T>>();
 
-                var index = 0;
+            public Heap()
+            {
+                Values.Add(null);
+            }
 
-                while (word1[index] == word2[index])
+            public void Insert(HeapObject<T> value)
+            {
+                Values.Add(value);
+
+                var index = Values.Count - 1;
+
+                BubbleUp(index);
+            }
+
+            public T RemoveTop()
+            {
+                if (Values.Count <= 1)
+                    return null;
+
+                var value = Values[1];
+
+                var bottomValue = Values[^1];
+                Values[1] = bottomValue;
+                Values.RemoveAt(Values.Count - 1);
+
+                SinkDown(1);
+
+                return value.Data;
+            }
+
+            private void SinkDown(int index)
+            {
+                if (index >= Values.Count)
+                    return;
+
+                var value = Values[index];
+
+                var child1Index = index * 2;
+
+                if (child1Index >= Values.Count)
+                    return;
+
+                var child2Index = child1Index + 1;
+
+                if (child2Index >= Values.Count || Values[child1Index].Comparer < Values[child2Index].Comparer)
                 {
-                    index++;
-
-                    if (index >= word1.Length)
-                        return true;
-
-                    if (index >= word2.Length)
-                        return false;
+                    if (value.Comparer > Values[child1Index].Comparer)
+                    {
+                        Values[index] = Values[child1Index];
+                        Values[child1Index] = value;
+                        SinkDown(child1Index);
+                        return;
+                    }
                 }
 
-                var word1Score = 0;
-                var word2Score = 0;
-
-                word1Score = (int) order[word1[index]];
-                word2Score = (int) order[word2[index]];
-
-                if (word1Score < word2Score)
-                    return true;
-                else
-                    return false;
-
+                if (value.Comparer > Values[child2Index].Comparer)
+                {
+                    Values[index] = Values[child2Index];
+                    Values[child2Index] = value;
+                    SinkDown(child2Index);
+                }
             }
-            else
+
+            private void BubbleUp(int index)
             {
-                return false;
+                var value = Values[index];
+
+                var parentIndex = index / 2;
+
+                if (parentIndex < 1)
+                    return;
+
+                var parent = Values[parentIndex];
+
+                if (parent.Comparer > value.Comparer)
+                {
+                    Values[parentIndex] = value;
+                    Values[index] = parent;
+                    BubbleUp(parentIndex);
+                }
             }
         }
     }
